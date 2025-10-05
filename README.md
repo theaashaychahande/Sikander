@@ -7,3 +7,5 @@ Sikander provides the strategic discipline of an institutional risk framework, s
 
 *   **Strategy:** Simple Moving Average (SMA) Crossover
 *   **Focus:** Automated execution with integrated position sizing.
+
+> Inspired by the strategic might of its legendary namesake and the power of a hidden gem "Alladin" by blackrock
