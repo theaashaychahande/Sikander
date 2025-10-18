@@ -49,6 +49,47 @@ class Portfolio:
                 except Exception:
                     asset.current_price = asset.purchase_price
         except Exception:
+ def get_portfolio_summary(self):
+        self.update_prices()
+        if not self.assets:
+            return {}
+        total_invested = sum(a.quantity * a.purchase_price for a in self.assets.values())
+        total_current = sum(a.quantity * a.current_price for a in self.assets.values())
+        total_pl = total_current - total_invested
+        total_pl_percent = (total_pl / total_invested * 100) if total_invested > 0 else 0.0
+        daily_pl = 0.0
+        return {
+            'total_invested': total_invested,
+            'total_current_value': total_current,
+            'total_pl': total_pl,
+            'total_pl_percent': total_pl_percent,
+            'daily_pl': daily_pl,
+            'asset_count': len(self.assets),
+        }
+    def get_asset_allocation(self):
+        self.update_prices()
+        total_value = sum(a.quantity * a.current_price for a in self.assets.values())
+        if total_value <= 0:
+            return pd.DataFrame()
+        rows = []
+        for ticker, asset in self.assets.items():
+            current_value = asset.quantity * asset.current_price
+            weight = (current_value / total_value) * 100 if total_value > 0 else 0.0
+            pl_dollar = current_value - (asset.quantity * asset.purchase_price)
+            pl_percent = ((asset.current_price - asset.purchase_price) / asset.purchase_price * 100) if asset.purchase_price > 0 else 0.0
+            rows.append({
+                'Ticker': ticker,
+                'Quantity': asset.quantity,
+                'Purchase Price': round(asset.purchase_price, 2),
+                'Current Price': round(asset.current_price, 2),
+                'Current Value': round(current_value, 2),
+                'Weight (%)': round(weight, 2),
+                'P&L ($)': round(pl_dollar, 2),
+                'P&L (%)': round(pl_percent, 2),
+            })
+        return pd.DataFrame(rows)
+
+            
             for asset in self.assets.values():
                 asset.current_price = asset.purchase_price
    
