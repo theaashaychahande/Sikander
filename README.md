@@ -16,11 +16,11 @@ Sikander provides the strategic discipline of an institutional risk framework, s
 
 ## What is Sikander?
 
-Sikander is a sleek, modern app for tracking, visualizing, and understanding portfolio risk and performance. Invest in your future with data-driven clarity, powered by [Streamlit](https://streamlit.io), Plotly charts, and an intuitive dashboard. Perfect for beginners and seasoned investors alike.
+Sikander is a sleek, modern app for tracking, visualizing, and understanding portfolio risk and performance. Invest in your future with data-driven clarity, powered by [Streamlit](https://streamlit.io), Plotly charts, and an intuitive dashboard. Perfect for beginners and seasoned investors alike 
 
 <div align="center">
-  <img src="https://placehold.co/800x300/10131a/00d4aa?text=Your+Portfolio,+Visualized!" alt="App Screenshot" width="70%"/>
-  <br><i>(Drop your screenshot or GIF here!)</i>
+  <img src="screenshot.png" alt="App Screenshot" width="70%"/>
+  <br><i>(Actual Sikander app screenshot)</i>
 </div>
 
 ---
