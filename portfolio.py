@@ -49,7 +49,11 @@ class Portfolio:
                 except Exception:
                     asset.current_price = asset.purchase_price
         except Exception:
- def get_portfolio_summary(self):
+            # If DataFetcher import or lookup fails, fall back to purchase price
+            for asset in self.assets.values():
+                asset.current_price = asset.purchase_price
+
+    def get_portfolio_summary(self):
         self.update_prices()
         if not self.assets:
             return {}
@@ -88,8 +92,4 @@ class Portfolio:
                 'P&L (%)': round(pl_percent, 2),
             })
         return pd.DataFrame(rows)
-
-            
-            for asset in self.assets.values():
-                asset.current_price = asset.purchase_price
    
