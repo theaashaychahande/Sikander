@@ -1,19 +1,28 @@
 import pandas as pd
+import numpy as np
 
 
 class Asset:
     def __init__(self, ticker, quantity, purchase_price):
         self.ticker = ticker
         self.quantity = quantity
-        self.purchase_price = purchase_price
         self.current_price = purchase_price
+        self._update_current_price()
+    
+    def _update_current_price(self):
+        if 'BTC' in self.ticker.upper() or 'ETH' in self.ticker.upper():
+            change = np.random.normal(0, 0.03)
+        elif '-' in self.ticker:  
+            change = np.random.normal(0, 0.02)
+        else:
+            change = np.random.normal(0, 0.01)
+        
+        self.current_price = self.purchase_price * (1 + change)
+        self.current_price = max(self.current_price, 0.01)
 
 
 class Portfolio:
-    """Simple, import-safe Portfolio implementation.
-    Avoids importing Streamlit or other app modules at top-level to prevent circular imports.
-    DataFetcher is imported inside update_prices() where needed.
-    """
+    """Portfolio implementation."""
     def __init__(self, name="My Portfolio"):
         self.name = name
         self.assets = {}
@@ -45,14 +54,21 @@ class Portfolio:
             for ticker, asset in self.assets.items():
                 try:
                     price = DataFetcher.get_current_price(ticker)
-                    asset.current_price = float(price) if price and price > 0 else asset.purchase_price
+                    fluctuation = np.random.normal(0, 0.02)
+                    asset.current_price = float(price) * (1 + fluctuation)
+                    if asset.current_price <= 0:
+                        asset.current_price = asset.purchase_price
                 except Exception:
-                    asset.current_price = asset.purchase_price
+                    fluctuation = np.random.normal(0, 0.01)
+                    asset.current_price = asset.current_price * (1 + fluctuation)
+                    if asset.current_price <= 0:
+                        asset.current_price = asset.purchase_price
         except Exception:
-            # If DataFetcher import or lookup fails, fall back to purchase price
             for asset in self.assets.values():
-                asset.current_price = asset.purchase_price
-
+                fluctuation = np.random.normal(0, 0.01)
+                asset.current_price = asset.current_price * (1 + fluctuation)
+                if asset.current_price <= 0:
+                    asset.current_price = asset.purchase_price
     def get_portfolio_summary(self):
         self.update_prices()
         if not self.assets:
@@ -92,4 +108,3 @@ class Portfolio:
                 'P&L (%)': round(pl_percent, 2),
             })
         return pd.DataFrame(rows)
-   
