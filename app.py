@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import locale
@@ -7,99 +6,252 @@ import risk_engine
 import visualization
 import data_fetcher
 import config
+
 primary = "#00d4aa"
 secondary = "#355C7D"
-bg_card = "#171B26"
-shadow = "0 4px 12px 0 rgba(0,0,0,0.25)"
+accent = "#FF6B6B"
+bg_dark = "#10131A"
+bg_card = "#19202C"
+bg_card_light = "#222945"
+shadow = "0 4px 20px rgba(0,0,0,0.3)"
+
 st.set_page_config(
     page_title="Sikander - Portfolio Analytics",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
 st.markdown(f"""
 <style>
-body, .stApp {{ background-color: #10131A; }}
-h1.main-header {{
-    font-family: 'Montserrat', 'Arial', sans-serif;
-    font-size: 3rem;
-    color: {primary};
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
+
+body, .stApp {{ 
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    color: #e0e0e0;
+    font-family: 'Inter', sans-serif;
+}}
+
+.main-header {{
+    font-family: 'Montserrat', sans-serif;
+    font-size: 3.5rem;
+    background: linear-gradient(90deg, {primary}, #00aaff, #00d4ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     text-align: center;
-    padding: 0.5rem 0 0.4rem 0;
-    letter-spacing: 2.5px;
+    padding: 1rem 0;
+    letter-spacing: 3px;
     margin-bottom: 0.5rem;
-    font-weight: bold;
+    font-weight: 800;
+    animation: gradientShift 8s ease infinite;
+    background-size: 300% 300%;
 }}
+
+@keyframes gradientShift {{
+    0% {{background-position: 0% 50%;}}
+    50% {{background-position: 100% 50%;}}
+    100% {{background-position: 0% 50%;}}
+}}
+
 .header-tagline {{
-    font-size: 1.15rem;
-    color: #9ed7cb;
+    font-size: 1.3rem;
+    color: #a0d2c3;
     text-align: center;
-    margin-bottom: 1.25rem;
+    margin-bottom: 2rem;
+    font-weight: 300;
+    letter-spacing: 1px;
+    animation: fadeIn 2s ease-in;
 }}
+
+@keyframes fadeIn {{
+    from {{opacity: 0;}}
+    to {{opacity: 1;}}
+}}
+
 .sidebar-card {{
-    background: #19202C;
-    padding: 1.2rem 1.1rem;
-    margin-bottom: 1.2rem;
-    border-radius: 12px;
+    background: {bg_card};
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 16px;
     box-shadow: {shadow};
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid rgba(0, 212, 170, 0.2);
 }}
+
+.sidebar-card:hover {{
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+}}
+
 .sidebar-section-title {{
     color: {primary};
-    font-weight: 600;
-    font-size: 1.1rem;
-    letter-spacing: .5px;
-    margin: .7rem 0 .3rem 0;
+    font-weight: 700;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+    margin: 1rem 0 0.7rem 0;
+    text-transform: uppercase;
+    position: relative;
+    padding-bottom: 0.5rem;
 }}
+
+.sidebar-section-title::after {{
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background: {primary};
+    border-radius: 3px;
+}}
+
 .kpi-card {{
     background: {bg_card};
-    border-radius: 11px;
-    margin-bottom: 10px;
-    padding: 1.2rem 1.1rem;
+    border-radius: 16px;
+    margin-bottom: 15px;
+    padding: 1.5rem;
     box-shadow: {shadow};
-    min-height: 90px;
+    min-height: 120px;
     text-align: center;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    background: linear-gradient({bg_dark}, {bg_dark}) padding-box,
+                linear-gradient(90deg, {primary}, #00aaff) border-box;
 }}
+
+.kpi-card:hover {{
+    transform: scale(1.03);
+    box-shadow: 0 8px 25px rgba(0, 212, 170, 0.2);
+}}
+
 .metric-label {{
-    font-size: 1.13rem;
+    font-size: 1.2rem;
     color: #b1b8cf;
-    margin-bottom: 0.4em;
-    letter-spacing:0.2px;
+    margin-bottom: 0.5em;
+    letter-spacing: 0.5px;
+    font-weight: 500;
 }}
+
 .metric-main {{
-    font-size: 2.2rem;
-    font-weight: 700;
+    font-size: 2.5rem;
+    font-weight: 800;
     color: {primary};
-    letter-spacing:1.3px;
+    letter-spacing: 1.5px;
+    text-shadow: 0 0 10px rgba(0, 212, 170, 0.3);
 }}
-.metric-delta.pos {{ color: #33EEA0; }}
-.metric-delta.neg {{ color: #FF6B6B; }}
+
+.metric-delta.pos {{ 
+    color: #33EEA0; 
+    font-weight: 600;
+}}
+
+.metric-delta.neg {{ 
+    color: {accent}; 
+    font-weight: 600;
+}}
+
 .risk-positive {{ color: #33EEA0 !important; }}
-.risk-negative {{ color: #FF6B6B !important; }}
-.tab-header[data-baseweb="tab"] {{
-    font-size:1.13rem;
-    color:{secondary};
-    font-weight:600;
+.risk-negative {{ color: {accent} !important; }}
+
+.stTabs [data-baseweb="tab-list"] {{
+    gap: 10px;
+    background: {bg_card_light};
+    padding: 10px;
+    border-radius: 12px;
 }}
-hr {{ border: 1px solid #222945; margin: 1.4em 0 1em 0; }}
+
+.stTabs [data-baseweb="tab"] {{
+    background: {bg_card};
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+}}
+
+.stTabs [data-baseweb="tab"]:hover {{
+    background: linear-gradient(90deg, {primary}, #00aaff);
+    color: {bg_dark} !important;
+}}
+
+.stTabs [aria-selected="true"] {{
+    background: linear-gradient(90deg, {primary}, #00aaff) !important;
+    color: {bg_dark} !important;
+}}
+
 .stButton>button, .stDownloadButton>button {{
-    background: {primary} !important;
-    color: #171B26 !important;
-    border-radius: 7px !important;
+    background: linear-gradient(90deg, {primary}, #00aaff) !important;
+    color: {bg_dark} !important;
+    border-radius: 12px !important;
     box-shadow: {shadow};
-    border:none !important;
-    font-weight: bold;
-    transition: box-shadow 0.2s;
+    border: none !important;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0.7rem 1.5rem;
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
 }}
+
 .stButton>button:hover, .stDownloadButton>button:hover {{
-    box-shadow: 0 8px 24px 0 rgba(0,0,0,0.25);
-    background: #20eeba !important;
+    box-shadow: 0 10px 30px rgba(0, 212, 170, 0.4);
+    transform: translateY(-3px);
+}}
+
+.stSelectbox, .stTextInput, .stNumberInput {{
+    background: {bg_card_light} !important;
+    border-radius: 12px !important;
+}}
+
+@keyframes pulse {{
+    0% {{ transform: scale(1); }}
+    50% {{ transform: scale(1.05); }}
+    100% {{ transform: scale(1); }}
+}}
+
+.pulse {{
+    animation: pulse 2s infinite;
+}}
+
+::-webkit-scrollbar {{
+    width: 10px;
+}}
+
+::-webkit-scrollbar-track {{
+    background: {bg_dark};
+}}
+
+::-webkit-scrollbar-thumb {{
+    background: {primary};
+    border-radius: 5px;
+}}
+
+hr {{ 
+    border: 1px solid {bg_card_light}; 
+    margin: 2em 0 1.5em 0; 
+}}
+
+.aashay-footer {{
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    width: 100vw;
+    padding: 0.5em 0 0.2em 0;
+    color: #b0b7c3;
+    background: rgba(0,0,0,0.3);
+    font-size: 0.95em;
+    letter-spacing: 1px;
+    text-align: center;
+    z-index:9999;
+    pointer-events: none;
+    font-family: 'Inter', 'Montserrat', sans-serif;
+    backdrop-filter: blur(5px);
 }}
 </style>
 """, unsafe_allow_html=True)
+
 def format_inr(amount):
     try:
         return "₹" + locale.format_string("%0.2f", amount, grouping=True)
     except Exception:
-       
         s = f"{amount:,.2f}"
         parts = s.split('.')
         n = parts[0]
@@ -109,20 +261,24 @@ def format_inr(amount):
         else:
             n = parts[0]
         return f"₹{n}.{parts[1]}"
+
 def format_money(amount, inr_mode, rate):
     if inr_mode:
         amount_inr = amount * rate
         return format_inr(amount_inr)
     else:
         return f"${amount:,.2f}"
+
 def format_metric(amount, inr_mode, rate):
     if inr_mode:
         return format_inr(amount * rate)
     else:
         return f"${amount:,.2f}"
+
 class SikanderApp:
     def __init__(self):
         self.init_session_state()
+
     def init_session_state(self):
         if 'portfolio' not in st.session_state:
             st.session_state.portfolio = portfolio.Portfolio("My Portfolio")
@@ -132,6 +288,7 @@ class SikanderApp:
             st.session_state.currency = 'USD'
         if 'usd_inr_rate' not in st.session_state:
             st.session_state.usd_inr_rate = 83.0
+
     def render_sidebar(self):
         st.sidebar.markdown('<div class="sidebar-card">', unsafe_allow_html=True)
         st.sidebar.markdown('<div class="sidebar-section-title">🌏 Currency Options</div>', unsafe_allow_html=True)
@@ -164,7 +321,6 @@ class SikanderApp:
             if submitted:
                 if ticker and quantity > 0 and purchase_price > 0:
                     if data_fetcher.DataFetcher.validate_ticker(ticker):
-                        
                         price_usd = purchase_price if st.session_state.currency == 'USD' else purchase_price / st.session_state.usd_inr_rate
                         st.session_state.portfolio.add_asset(ticker, quantity, price_usd)
                         st.sidebar.success(f"Added {quantity} shares of {ticker}")
@@ -176,29 +332,45 @@ class SikanderApp:
         st.sidebar.markdown('<div class="sidebar-card">', unsafe_allow_html=True)
         st.sidebar.markdown('<div class="sidebar-section-title">⚡ Quick Add Popular Assets</div>', unsafe_allow_html=True)
         selected_category = st.sidebar.selectbox(
-            "Asset Category", list(config.POPULAR_ASSETS.keys()))
+            "Asset Category", list(config.POPULAR_ASSETS.keys()),
+            help="Select a category of popular assets")
         col1, col2 = st.sidebar.columns([2,1])
         with col1:
-            quick_ticker = st.selectbox("Asset", config.POPULAR_ASSETS[selected_category], key="quick_asset")
+            quick_ticker = st.selectbox("Asset", config.POPULAR_ASSETS[selected_category], key="quick_asset",
+                                       help="Select an asset to quickly add to your portfolio")
         with col2:
-            quick_quantity = st.number_input("Qty", min_value=1.0, value=1.0, step=1.0, key="quick_qty")
-        if st.sidebar.button("Quick Add"):
+            quick_quantity = st.number_input("Qty", min_value=1.0, value=1.0, step=1.0, key="quick_qty",
+                                            help="Enter the quantity of assets to add")
+        if st.sidebar.button("🚀 Quick Add", use_container_width=True):
             current_price = data_fetcher.DataFetcher.get_current_price(quick_ticker)
             st.session_state.portfolio.add_asset(quick_ticker, quick_quantity, current_price)
-            st.sidebar.success(f"Added {quick_quantity} shares of {quick_ticker}")
+            st.sidebar.success(f"✅ Added {quick_quantity} shares of {quick_ticker}")
         st.sidebar.markdown('</div>', unsafe_allow_html=True)
         st.sidebar.markdown('<div class="sidebar-card">', unsafe_allow_html=True)
         st.sidebar.markdown('<div class="sidebar-section-title">🧰 Portfolio Operations</div>', unsafe_allow_html=True)
-        if st.sidebar.button("Clear Portfolio"):
+        if st.sidebar.button("🗑️ Clear Portfolio", use_container_width=True, 
+                            help="Remove all assets from your portfolio"):
             st.session_state.portfolio = portfolio.Portfolio(
                 st.session_state.portfolio.name)
             st.session_state.risk_engine = risk_engine.RiskEngine(st.session_state.portfolio)
             st.rerun()
-        st.sidebar.info("Tip: You can edit the details of assets below from the Holdings tab.")
+        st.sidebar.info("💡 Tip: You can edit the details of assets below from the Holdings tab.")
         st.sidebar.markdown('</div>', unsafe_allow_html=True)
+
     def render_dashboard(self):
-        st.markdown('<h1 class="main-header">Sikander <span style="font-weight:300;font-size:2.2rem;vertical-align:middle;">📊</span></h1>', unsafe_allow_html=True)
-        st.markdown('<div class="header-tagline">Modern, beautiful, and understandable portfolio risk analytics for everyone.</div>', unsafe_allow_html=True)
+        st.markdown('''
+        <div style="text-align:center; margin-bottom:10px;">
+            <h1 class="main-header pulse">Sikander <span style="font-weight:300;font-size:2.5rem;vertical-align:middle;">📊</span></h1>
+            <div class="header-tagline">Modern, beautiful, and understandable portfolio risk analytics for everyone.</div>
+            <div style="display:flex; justify-content:center; gap:20px; margin-top:15px;">
+                <span style="font-size:2rem; animation: pulse 2s infinite;">📈</span>
+                <span style="font-size:2rem; animation: pulse 2.5s infinite;">💰</span>
+                <span style="font-size:2rem; animation: pulse 3s infinite;">📊</span>
+                <span style="font-size:2rem; animation: pulse 2.2s infinite;">💼</span>
+                <span style="font-size:2rem; animation: pulse 2.8s infinite;">🏦</span>
+            </div>
+        </div>
+        ''', unsafe_allow_html=True)
         self.render_portfolio_summary()
         st.markdown("<hr>", unsafe_allow_html=True)
         tab1, tab2, tab3, tab4 = st.tabs([
@@ -212,6 +384,7 @@ class SikanderApp:
             self.render_risk_tab()
         with tab4:
             self.render_holdings_tab()
+
     def render_portfolio_summary(self):
         summary = st.session_state.portfolio.get_portfolio_summary()
         if not summary:
@@ -228,16 +401,20 @@ class SikanderApp:
             ("Assets", f"{summary['asset_count']}", None)
         ]
         labels = ["💸", "💰", "📈", "🔄", "📦"]
+        icons = ["arrow-down-circle", "arrow-up-circle", "bar-chart-2", "trending-up", "package"]
         for i, (label, value, delta, *args) in enumerate(metrics):
             with kpi_cols[i]:
                 delta_str = f"<div class='metric-delta {'pos' if delta is None or args and args[0] else 'neg'}'>{delta or ''}</div>" if delta else ""
+                animation_class = "pulse" if label == "Total P&L" and summary['total_pl'] >= 0 else ""
+                card_style = "border: 2px solid #FF6B6B;" if label == "Total P&L" and summary['total_pl'] < 0 else ""
                 st.markdown(f"""
-                    <div class='kpi-card'>
+                    <div class='kpi-card {animation_class}' style='{card_style}'>
                         <div class='metric-label'>{labels[i]} {label}</div>
                         <div class='metric-main'>{value}</div>
                         {delta_str}
                     </div>
                 """, unsafe_allow_html=True)
+
     def render_overview_tab(self):
         col1, col2 = st.columns([2, 1])
         inr_mode = st.session_state.currency == 'INR'
